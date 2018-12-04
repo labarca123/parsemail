@@ -65,6 +65,7 @@ func createEmailFromHeader(header mail.Header) (email Email, err error) {
 	email.Cc = hp.parseAddressList(header.Get("Cc"))
 	email.Bcc = hp.parseAddressList(header.Get("Bcc"))
 	email.Date = hp.parseTime(header.Get("Date"))
+	email.Ip = hp.parseIp(header.Get("Received"))
 	email.ResentFrom = hp.parseAddressList(header.Get("Resent-From"))
 	email.ResentSender = hp.parseAddress(header.Get("Resent-Sender"))
 	email.ResentTo = hp.parseAddressList(header.Get("Resent-To"))
@@ -348,6 +349,14 @@ type headerParser struct {
 	err    error
 }
 
+func (hp headerParser) parseIp(s string) string {
+	slice := strings.Split(s, "]")
+	s = slice[0]
+	slice = strings.SplitAfter(s, "[")
+
+	return slice[len(slice)-1]
+}
+
 func (hp headerParser) parseAddress(s string) (ma *mail.Address) {
 	if hp.err != nil {
 		return nil
@@ -438,6 +447,7 @@ type Email struct {
 	Cc         []*mail.Address
 	Bcc        []*mail.Address
 	Date       time.Time
+	Ip         string
 	MessageID  string
 	InReplyTo  []string
 	References []string
